@@ -1,0 +1,19 @@
+{
+  "hosting": [
+    {
+      "target": "DSS-Auth-Website",
+      "public": "dist/DSS-Auth-Website",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+  ]
+}
