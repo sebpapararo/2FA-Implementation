@@ -2,16 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DSS Authentication Website</title>
+    <title>Home | DSS Auth Site</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-     <link rel="stylesheet" href="static/style.css">
+    <link rel="stylesheet" href="static/style.css">
 
 </head>
 <body>
+
+
 <div class="row h-100 my-auto" id="loginParent">
+
+
     <form action="/login" method="POST" role="login-form" id="loginForm">
+        {# Div to display any flash messages #}
+        <div class="container" id="flashMessages">
+            {% for message in get_flashed_messages() %}
+                <div class="alert alert-warning">
+                    <i class="fa fa-lg fa-exclamation-circle"></i>
+                    {{ message | safe }}
+                </div>
+            {% endfor %}
+        </div>
         <div class="form-group">
             <label for="username"> Username: </label>
             <input type="text" class="form-control" id="username" name="username" placeholder="Username here..."/>

@@ -1,4 +1,4 @@
-#loginParent {
+#loginParent, #parent {
     display: block;
     text-align: center;
 }
@@ -10,6 +10,10 @@
     text-align: left;
 }
 
+/*#flashMessages {*/
+/*    width: 30%;*/
+/*    text-align: center;*/
+/*}*/
 
 html, body {
     overflow-x: hidden;
