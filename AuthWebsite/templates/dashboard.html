@@ -18,16 +18,15 @@
         </div>
     {% endfor %}
 </div>
-
-<div class="card" style="width: 18rem;">
-  <img class="card-img-top" src="..." alt="Card image cap">
-  <div class="card-body">
-    <h5 class="card-title">Card title</h5>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-    <a href="/logout" class="btn btn-primary">Logout!</a>
-  </div>
+<div class="row h-100 my-auto offset-md-3" id="cardParent">
+    <div class="card">
+        <img id="memeImg" class="card-img-top" src="{{meme}}" height="700">
+        <div class="card-body">
+            <h5 class="card-title">Welcome to my DSS Authentication Website</h5>
+            <p class="card-text">Congratulations, you are logged in! Here is a meme as a reward for your troubles!</p>
+            <a href="/logout" class="btn btn-primary">Logout!</a>
+        </div>
+    </div>
 </div>
-
-
 </body>
 </html>

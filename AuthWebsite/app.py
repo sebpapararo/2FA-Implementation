@@ -1,5 +1,6 @@
 import datetime
 import os
+import random
 
 from flask import Flask, render_template, request, flash, redirect, session, make_response
 
@@ -17,20 +18,21 @@ def setHeaders(response):
     response.headers['Pragma'] = 'no-cache;'
     response.headers['X-Content-Type-Options'] = 'nosniff;'
     response.headers['Content-Security-Policy'] = "default-src 'self';" \
-                                                  "style-src stackpath.bootstrapcdn.com 'self';"
+                                                  "style-src stackpath.bootstrapcdn.com 'self';" \
+                                                  "img-src i.redd.it 'self';"
     return response
 
 
 # Route to load the index page
 @app.route('/', methods=['GET'])
 def index():
-    if session:
+    # Check if they are already logged in
+    if 'username' in session:
         flash('You are already logged in. Log out to visit the index!')
         response = make_response(redirect('/dashboard'))
-        response = setHeaders(response)
-        return response
+    else:
+        response = make_response(render_template('index.html'))
 
-    response = make_response(render_template('index.html'))
     response = setHeaders(response)
     return response
 
@@ -39,15 +41,16 @@ def index():
 # Route to load the dashboard page
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
-    if session:
-        response = make_response(render_template('dashboard.html'))
-        response = setHeaders(response)
-        return response
+    # Check if they are already logged in
+    if 'username' in session:
+        randMeme = getRandomMeme()
+        response = make_response(render_template('dashboard.html', meme=randMeme))
     else:
         flash('You must be logged in to visit the dashboard!')
         response = make_response(redirect('/'))
-        response = setHeaders(response)
-        return response
+
+    response = setHeaders(response)
+    return response
 
 
 @app.route('/login', methods=['POST'])
@@ -78,24 +81,31 @@ def login():
         session.permanent = True
         app.permanent_session_lifetime = datetime.timedelta(minutes=5)
         response = make_response(redirect('/dashboard'))
-        response = setHeaders(response)
-        return response
     else:
         flash('Username or password was incorrect!')
         response = make_response(redirect('/'))
-        response = setHeaders(response)
-        return response
+
+    response = setHeaders(response)
+    return response
 
 
 @app.route('/logout')
 def logout():
-    session.pop('username', None)
+    if 'username' in session:
+        session.pop('username', None)
+        flash('Successfully logged out!')
+    else:
+        flash('You were not logged in!')
 
     response = make_response(redirect('/'))
     response = setHeaders(response)
-
-    flash('Successfully logged out!')
     return response
+
+
+# Function get a meme from the available choices
+def getRandomMeme():
+    choice = random.choice(os.listdir("static/memes"))
+    return 'static/memes/' + choice
 
 
 # Run the Flask server
