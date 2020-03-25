@@ -20,11 +20,13 @@
 </div>
 <div class="row h-100 my-auto offset-md-3" id="cardParent">
     <div class="card">
-        <img id="memeImg" class="card-img-top" src="{{meme}}" height="700">
+        <img id="memeImg" class="card-img-top" src="{{ meme }}" height="700">
         <div class="card-body">
             <h5 class="card-title">Welcome to my DSS Authentication Website</h5>
-            <p class="card-text">Congratulations, you are logged in as '{{ user }}'! Here is a meme as a reward for your troubles!</p>
-            <a href="/logout" class="btn btn-primary">Logout!</a>
+            <p class="card-text">Congratulations, you are logged in as '{{ user }}'! Here's a meme for your troubles!</p>
+            <form action="/logout" method="POST" id="logoutForm">
+                <button type="submit" class="btn btn-danger border-dark btn-block my-2"">Logout!</button>
+            </form>
         </div>
     </div>
 </div>

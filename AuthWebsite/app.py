@@ -202,7 +202,7 @@ def createAccount():
     return response
 
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 def logout():
     if 'username' in session:
         session.pop('username', None)
