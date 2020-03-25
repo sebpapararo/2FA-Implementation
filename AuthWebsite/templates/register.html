@@ -12,8 +12,8 @@
 <body>
 
 
-<div class="row h-100 my-auto" id="registerParent">
-    <form action="/register/createAccount" method="POST" role="register-form" id="registerForm">
+<div class="row h-100 my-auto" id="parent">
+    <form action="/register/createAccount" method="POST" role="register-form" id="form">
         {# Div to display any flash messages #}
         <div class="container" id="flashMessages">
             {% for message in get_flashed_messages() %}
@@ -31,7 +31,7 @@
             <label for="password"> Verify password: </label>
             <input type="password" class="form-control" id="passwordCheck" name="passwordCheck" placeholder="Password here...">
         </div>
-        <button type="submit" class="btn btn-success border-dark btn-block my-2">Register</button>
+        <button type="submit" class="btn btn-primary border-dark btn-block my-2">Register</button>
     </form>
 </div>
 

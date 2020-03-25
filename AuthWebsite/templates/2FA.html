@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Home | DSS Auth Site</title>
+    <title>Register | DSS Auth Site</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
@@ -13,7 +13,7 @@
 
 
 <div class="row h-100 my-auto" id="parent">
-    <form action="/login" method="POST" role="login-form" id="form">
+    <form action="/twostep/verify" method="POST" role="2fa-form" id="form">
         {# Div to display any flash messages #}
         <div class="container" id="flashMessages">
             {% for message in get_flashed_messages() %}
@@ -24,13 +24,10 @@
             {% endfor %}
         </div>
         <div class="form-group">
-            <label for="username"> Username: </label>
-            <input type="text" class="form-control" id="username" name="username" placeholder="Username here..."/>
-            <label for="password"> Password: </label>
-            <input type="password" class="form-control" id="password" name="password" placeholder="Password here...">
+            <label for="username"> 2FA Code: </label>
+            <input type="text" class="form-control" id="username" name="username" placeholder="6 digit code here..."/>
         </div>
         <button type="submit" class="btn btn-primary border-dark btn-block my-2">Login</button>
-        <a role="button" href="/register" class="btn btn-secondary border-dark float-right w-100">Register</a>
     </form>
 </div>
 

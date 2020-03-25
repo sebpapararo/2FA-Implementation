@@ -94,6 +94,20 @@ def register():
     return response
 
 
+# Route to load the index page
+@app.route('/twostep', methods=['GET'])
+def twoStep():
+    # Check if they are already logged in
+    if 'username' in session:
+        flash('You are already logged in. Log out to register!')
+        response = make_response(redirect('/dashboard'))
+    else:
+        response = make_response(render_template('2FA.html'))
+
+    response = setHeaders(response)
+    return response
+
+
 # Route to load the dashboard page
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
@@ -135,6 +149,8 @@ def login():
         response = make_response(redirect('/'))
         response = setHeaders(response)
         return response
+
+    # TODO: 25/03/2020 produce unique token and add to database to stop people spoofing the first stage of the login process
 
     # If the user exists in the database
     if query_db('SELECT COUNT(username) FROM users WHERE username = "%s"' % username) and \
@@ -200,6 +216,20 @@ def createAccount():
     response = make_response(redirect('/'))
     response = setHeaders(response)
     return response
+
+
+# Function to generate the TOTP server side so the user's input can be checked
+@app.route('/twostep/verify', methods=['POST'])
+def verify2FA():
+    roundedTime = roundTime(datetime.datetime.now().time())
+
+
+# Function that floors the current time to the nearest 30 seconds
+def roundTime(time):
+    roundedSecond = 0
+    if time.second >= 30:
+        roundedSecond = 30
+    return datetime.timedelta(hours=time.hour, minutes=time.minute, seconds=roundedSecond)
 
 
 @app.route('/logout', methods=['POST'])

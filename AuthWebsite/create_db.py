@@ -25,6 +25,14 @@ def create():
         );
     ''')
 
+    # Create the users table
+    c.execute('''
+            CREATE TABLE loginRequests (
+                key varchar PRIMARY KEY,
+                uid varchar
+            );
+        ''')
+
     userID = uuid.uuid4()
     hashedPass = bcrypt.generate_password_hash('admin').decode('utf-8')
     query = 'INSERT INTO users VALUES("%s", "admin", "%s")' % (userID, hashedPass)
