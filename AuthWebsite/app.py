@@ -2,6 +2,7 @@ import datetime
 import os
 import random
 import sqlite3
+import uuid
 
 from flask import Flask, render_template, request, flash, redirect, session, make_response, g
 from flask_bcrypt import Bcrypt
@@ -79,13 +80,27 @@ def index():
     return response
 
 
+# Route to load the index page
+@app.route('/register', methods=['GET'])
+def register():
+    # Check if they are already logged in
+    if 'username' in session:
+        flash('You are already logged in. Log out to register!')
+        response = make_response(redirect('/dashboard'))
+    else:
+        response = make_response(render_template('register.html'))
+
+    response = setHeaders(response)
+    return response
+
+
 # Route to load the dashboard page
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
     # Check if they are already logged in
     if 'username' in session:
         randMeme = getRandomMeme()
-        response = make_response(render_template('dashboard.html', meme=randMeme))
+        response = make_response(render_template('dashboard.html', meme=randMeme, user=session['username']))
     else:
         flash('You must be logged in to visit the dashboard!')
         response = make_response(redirect('/'))
@@ -96,6 +111,13 @@ def dashboard():
 
 @app.route('/login', methods=['POST'])
 def login():
+
+    if 'username' in session:
+        flash('You are already logged in. Log out to register!')
+        response = make_response(redirect('/dashboard'))
+        response = setHeaders(response)
+        return response
+
     # Get fields from submitted form
     username = request.form.get('username', None)
     password = request.form.get('password', None)
@@ -107,16 +129,12 @@ def login():
         response = setHeaders(response)
         return response
 
-    # Make sure sure both fields are not empty
+    # Make sure both fields are not empty
     if username == '' or password == '':
         flash('Either the username or password field was empty!')
         response = make_response(redirect('/'))
         response = setHeaders(response)
         return response
-
-    # TODO: 23/03/2020 Implement a basic register thing
-    #  leave it hard coded for now
-    # TODO: 23/03/2020 Add hashing passwords
 
     # If the user exists in the database
     if query_db('SELECT COUNT(username) FROM users WHERE username = "%s"' % username) and \
@@ -134,6 +152,52 @@ def login():
         flash('Username or password was incorrect!')
         response = make_response(redirect('/'))
 
+    response = setHeaders(response)
+    return response
+
+
+@app.route('/register/createAccount', methods=['POST'])
+def createAccount():
+    if 'username' in session:
+        flash('You are already logged in. Log out to register!')
+        response = make_response(redirect('/dashboard'))
+        response = setHeaders(response)
+        return response
+
+    username = request.form.get('username', None)
+    password = request.form.get('password', None)
+    passwordCheck = request.form.get('passwordCheck', None)
+
+    # Make sure all fields are sent
+    if username is None or password is None or passwordCheck is None:
+        flash('One of the fields was not submitted!')
+        response = make_response(redirect('/register'))
+        response = setHeaders(response)
+        return response
+
+    # Make sure all fields are not empty
+    if username == '' or password == '' or passwordCheck == '':
+        flash('One of the fields was empty!')
+        response = make_response(redirect('/register'))
+        response = setHeaders(response)
+        return response
+
+    # Make sure passwords match each other
+    if password != passwordCheck:
+        flash('Passwords do not match!')
+        response = make_response(redirect('/register'))
+        response = setHeaders(response)
+        return response
+
+    # Get information ready for database
+    userID = str(uuid.uuid4())
+    hashedPass = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    query_db('INSERT INTO users VALUES("%s", "%s", "%s")' % (userID, username, hashedPass))
+    get_db().commit()
+
+    flash('Account has been created, please login!')
+    response = make_response(redirect('/'))
     response = setHeaders(response)
     return response
 

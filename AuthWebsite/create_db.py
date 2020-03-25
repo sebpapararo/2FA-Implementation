@@ -25,9 +25,9 @@ def create():
         );
     ''')
 
-    id = uuid.uuid4()
+    userID = uuid.uuid4()
     hashedPass = bcrypt.generate_password_hash('admin').decode('utf-8')
-    query = 'INSERT INTO users VALUES("%s", "admin", "%s")' % (id, hashedPass)
+    query = 'INSERT INTO users VALUES("%s", "admin", "%s")' % (userID, hashedPass)
     c.execute(query)
 
     # Commit all changes to the database

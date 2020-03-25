@@ -1,9 +1,9 @@
-#loginParent, #parent {
+#loginParent, #registerParent {
     display: block;
     text-align: center;
 }
 
-#loginForm {
+#loginForm, #registerForm {
     width: 20%;
     display: inline-block;
     margin: 15% auto;
