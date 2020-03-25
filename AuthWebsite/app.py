@@ -1,14 +1,56 @@
 import datetime
 import os
 import random
+import sqlite3
 
-from flask import Flask, render_template, request, flash, redirect, session, make_response
+from flask import Flask, render_template, request, flash, redirect, session, make_response, g
+from flask_bcrypt import Bcrypt
 
 # Config statements
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
+DATABASE = 'database.db'
 app.secret_key = os.urandom(64)
+context = ('certificate.pem', 'key.pem')
 app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
-# app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SECURE'] = True
+
+
+# Database Methods - Courtesy of Oli
+def get_db():
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = sqlite3.connect(DATABASE)
+
+    def make_dicts(cursor, row):
+        return dict((cursor.description[idx][0], value)
+                    for idx, value in enumerate(row))
+
+    db.row_factory = make_dicts
+    return db
+
+
+def query_db(query, args=(), one=False):
+    cur = None
+    rv = None
+    try:
+        cur = get_db().execute(query, args)
+        rv = cur.fetchall()
+    except sqlite3.Error as e:
+        app.logger.info('Database error: %s' % e)
+    except Exception as e:
+        app.logger.info('Exception in query_db: %s' % e)
+    finally:
+        if cur:
+            cur.close()
+    return (rv[0] if rv else None) if one else rv
+
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
 
 
 # Set the response headers
@@ -37,7 +79,6 @@ def index():
     return response
 
 
-# TODO: 23/03/2020 Make the dashboard.html file
 # Route to load the dashboard page
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
@@ -76,11 +117,19 @@ def login():
     # TODO: 23/03/2020 Implement a basic register thing
     #  leave it hard coded for now
     # TODO: 23/03/2020 Add hashing passwords
-    if username == 'admin' and password == 'admin':
-        session['username'] = username
-        session.permanent = True
-        app.permanent_session_lifetime = datetime.timedelta(minutes=5)
-        response = make_response(redirect('/dashboard'))
+
+    # If the user exists in the database
+    if query_db('SELECT COUNT(username) FROM users WHERE username = "%s"' % username) and \
+            query_db('SELECT COUNT(username) FROM users WHERE username = "%s"' % username)[0].get('COUNT(username)') == 1:
+        # Check password is correct
+        if bcrypt.check_password_hash(query_db('SELECT password FROM users WHERE username = "%s"' % username)[0].get('password'), password):
+            session['username'] = username
+            session.permanent = True
+            app.permanent_session_lifetime = datetime.timedelta(minutes=10)
+            response = make_response(redirect('/dashboard'))
+        else:
+            flash('Username or password was incorrect!')
+            response = make_response(redirect('/'))
     else:
         flash('Username or password was incorrect!')
         response = make_response(redirect('/'))
@@ -110,4 +159,4 @@ def getRandomMeme():
 
 # Run the Flask server
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=False)
+    app.run(host='127.0.0.1', port=5000, debug=False, ssl_context=context)

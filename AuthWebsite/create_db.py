@@ -1,0 +1,45 @@
+import os
+import sqlite3
+import uuid
+
+from flask import Flask
+from flask_bcrypt import Bcrypt
+
+app = Flask(__name__)
+bcrypt = Bcrypt(app)
+
+DATABASE = 'database.db'
+
+
+# Function to create the database tables and populate some fake users and posts
+def create():
+    db = sqlite3.connect(DATABASE)
+    c = db.cursor()
+
+    # Create the users table
+    c.execute('''
+        CREATE TABLE users (
+            id varchar PRIMARY KEY,
+            username varchar,
+            password varchar
+        );
+    ''')
+
+    id = uuid.uuid4()
+    hashedPass = bcrypt.generate_password_hash('admin').decode('utf-8')
+    query = 'INSERT INTO users VALUES("%s", "admin", "%s")' % (id, hashedPass)
+    c.execute(query)
+
+    # Commit all changes to the database
+    db.commit()
+
+
+# Delete the database, ready to create a new one
+def delete_db():
+    if os.path.exists(DATABASE):
+        os.remove(DATABASE)
+
+
+if __name__ == '__main__':
+    delete_db()
+    create()
