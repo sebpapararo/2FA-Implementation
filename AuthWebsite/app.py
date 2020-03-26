@@ -3,6 +3,7 @@ import hmac
 import math
 import os
 import random
+import secrets
 import sqlite3
 import time
 import uuid
@@ -215,10 +216,9 @@ def createAccount():
     # Get information ready for database
     userID = str(uuid.uuid4())
     hashedPass = bcrypt.generate_password_hash(password).decode('utf-8')
+    secretKey = secrets.token_hex(16)[0:20]
 
-    # TODO: 26/03/2020 add new secret for the user
-
-    query_db('INSERT INTO users VALUES("%s", "%s", "%s")' % (userID, username, hashedPass))
+    query_db('INSERT INTO users VALUES("%s", "%s", "%s", "%s")' % (userID, username, hashedPass, secretKey))
     get_db().commit()
 
     flash('Account has been created, please login!')
