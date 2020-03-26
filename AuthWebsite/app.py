@@ -1,8 +1,12 @@
 import datetime
+import hmac
+import math
 import os
 import random
 import sqlite3
+import time
 import uuid
+from hashlib import sha1
 
 from flask import Flask, render_template, request, flash, redirect, session, make_response, g
 from flask_bcrypt import Bcrypt
@@ -102,7 +106,11 @@ def twoStep():
         flash('You are already logged in. Log out to register!')
         response = make_response(redirect('/dashboard'))
     else:
-        response = make_response(render_template('2FA.html'))
+        if 'tempUsername' in session:
+            response = make_response(render_template('2FA.html'))
+        else:
+            flash('You have not completed the first login step!')
+            response = make_response(redirect('/'))
 
     response = setHeaders(response)
     return response
@@ -150,17 +158,16 @@ def login():
         response = setHeaders(response)
         return response
 
-    # TODO: 25/03/2020 produce unique token and add to database to stop people spoofing the first stage of the login process
-
     # If the user exists in the database
     if query_db('SELECT COUNT(username) FROM users WHERE username = "%s"' % username) and \
             query_db('SELECT COUNT(username) FROM users WHERE username = "%s"' % username)[0].get('COUNT(username)') == 1:
         # Check password is correct
         if bcrypt.check_password_hash(query_db('SELECT password FROM users WHERE username = "%s"' % username)[0].get('password'), password):
-            session['username'] = username
+            session['tempUsername'] = username
             session.permanent = True
-            app.permanent_session_lifetime = datetime.timedelta(minutes=10)
-            response = make_response(redirect('/dashboard'))
+            app.permanent_session_lifetime = datetime.timedelta(minutes=3)
+            response = make_response(redirect('/twostep'))
+
         else:
             flash('Username or password was incorrect!')
             response = make_response(redirect('/'))
@@ -209,6 +216,8 @@ def createAccount():
     userID = str(uuid.uuid4())
     hashedPass = bcrypt.generate_password_hash(password).decode('utf-8')
 
+    # TODO: 26/03/2020 add new secret for the user
+
     query_db('INSERT INTO users VALUES("%s", "%s", "%s")' % (userID, username, hashedPass))
     get_db().commit()
 
@@ -220,16 +229,57 @@ def createAccount():
 
 # Function to generate the TOTP server side so the user's input can be checked
 @app.route('/twostep/verify', methods=['POST'])
-def verify2FA():
-    roundedTime = roundTime(datetime.datetime.now().time())
+def verifyTOTP():
+
+    if 'tempUsername' in session:
+        # Get the current time floored to nearest 30 seconds
+        unixTime = math.floor(time.time() / 30)
+
+        # Generate the secret key
+        secretKey = query_db('SELECT secretKey FROM users WHERE username = "%s"' % session['tempUsername'])[0].get('secretKey')
+
+        # Generate the hash value using the secret key and current time using SHA-1
+        hashVal = hmac.new(secretKey.encode(), str(unixTime).encode(), sha1).hexdigest()
+
+        # Get the last bit of the hash value in decimal format
+        lastBit = int(hashVal[-1:], 16)
+
+        # Dynamically truncate the value and convert to decimal
+        truncatedVal = int(hashVal[lastBit*2:lastBit*2+8], 16)
+
+        # Truncate the value to a 6 digit code
+        totp = truncatedVal % 10**6
+        print(totp)
+
+        userTOTP = request.form.get('totpCode', None)
+        print(userTOTP)
+
+        if userTOTP is None or userTOTP == '':
+            flash('Field was blank or not sent!')
+            response = make_response(redirect('/twostep'))
+            response = setHeaders(response)
+            return response
+
+        if userTOTP == str(totp):
+            session['username'] = session['tempUsername']
+            session.pop('tempUsername')
+            session.permanent = True
+            app.permanent_session_lifetime = datetime.timedelta(minutes=5)
+            response = make_response(redirect('/dashboard'))
+            response = setHeaders(response)
+            return response
+        else:
+            flash('The code you entered was wrong!')
+            response = make_response(redirect('/twostep'))
+            response = setHeaders(response)
+            return response
 
 
-# Function that floors the current time to the nearest 30 seconds
-def roundTime(time):
-    roundedSecond = 0
-    if time.second >= 30:
-        roundedSecond = 30
-    return datetime.timedelta(hours=time.hour, minutes=time.minute, seconds=roundedSecond)
+    else:
+        flash('You were not logged in!')
+        response = make_response(redirect('/'))
+        response = setHeaders(response)
+        return response
 
 
 @app.route('/logout', methods=['POST'])

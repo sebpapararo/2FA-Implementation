@@ -1,4 +1,5 @@
 import os
+import secrets
 import sqlite3
 import uuid
 
@@ -20,8 +21,9 @@ def create():
     c.execute('''
         CREATE TABLE users (
             id varchar PRIMARY KEY,
-            username varchar,
-            password varchar
+            username varchar UNIQUE,
+            password varchar,
+            secretKey varchar
         );
     ''')
 
@@ -35,7 +37,8 @@ def create():
 
     userID = uuid.uuid4()
     hashedPass = bcrypt.generate_password_hash('admin').decode('utf-8')
-    query = 'INSERT INTO users VALUES("%s", "admin", "%s")' % (userID, hashedPass)
+    secretKey = secrets.token_hex(16)[0:20]
+    query = 'INSERT INTO users VALUES("%s", "admin", "%s", "%s")' % (userID, hashedPass, secretKey)
     c.execute(query)
 
     # Commit all changes to the database
