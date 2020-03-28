@@ -106,7 +106,7 @@ def twoStep():
     if 'username' in session:
         flash('You are already logged in. Log out to register!')
         response = make_response(redirect('/dashboard'))
-    else:
+    else    :
         if 'tempUsername' in session:
             response = make_response(render_template('2FA.html'))
         else:
@@ -249,10 +249,11 @@ def verifyTOTP():
 
         # Truncate the value to a 6 digit code
         totp = truncatedVal % 10**6
-        print(totp)
+
+        # Change to str and use zfill to add leading zeroes to make sure 6 digits
+        totp = str(totp).zfill(6)
 
         userTOTP = request.form.get('totpCode', None)
-        print(userTOTP)
 
         if userTOTP is None or userTOTP == '':
             flash('Field was blank or not sent!')
