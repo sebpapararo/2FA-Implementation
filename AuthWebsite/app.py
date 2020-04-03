@@ -106,7 +106,7 @@ def twoStep():
     if 'username' in session:
         flash('You are already logged in. Log out to register!')
         response = make_response(redirect('/dashboard'))
-    else    :
+    else:
         if 'tempUsername' in session:
             response = make_response(render_template('2FA.html'))
         else:
@@ -166,7 +166,7 @@ def login():
         if bcrypt.check_password_hash(query_db('SELECT password FROM users WHERE username = "%s"' % username)[0].get('password'), password):
             session['tempUsername'] = username
             session.permanent = True
-            app.permanent_session_lifetime = datetime.timedelta(minutes=3)
+            app.permanent_session_lifetime = datetime.timedelta(minutes=10)
             response = make_response(redirect('/twostep'))
 
         else:
@@ -222,6 +222,7 @@ def createAccount():
     get_db().commit()
 
     flash('Account has been created, please login!')
+    flash('Your secret key is: \'' + secretKey + '\'. Copy this, and keep it somewhere safe! It will not be shown again!')
     response = make_response(redirect('/'))
     response = setHeaders(response)
     return response
@@ -231,12 +232,16 @@ def createAccount():
 @app.route('/twostep/verify', methods=['POST'])
 def verifyTOTP():
 
+    print('gets here')
+
     if 'tempUsername' in session:
+        print('gets here 2')
         # Get the current time floored to nearest 30 seconds
         unixTime = math.floor(time.time() / 30)
 
-        # Generate the secret key
+        # Fetch the secret key for the user
         secretKey = query_db('SELECT secretKey FROM users WHERE username = "%s"' % session['tempUsername'])[0].get('secretKey')
+        print(secretKey)
 
         # Generate the hash value using the secret key and current time using SHA-1
         hashVal = hmac.new(secretKey.encode(), str(unixTime).encode(), sha1).hexdigest()
@@ -253,8 +258,10 @@ def verifyTOTP():
         # Change to str and use zfill to add leading zeroes to make sure 6 digits
         totp = str(totp).zfill(6)
 
-        userTOTP = request.form.get('totpCode', None)
+        print(totp)
 
+        userTOTP = request.form.get('totpCode', None)
+        print(userTOTP)
         if userTOTP is None or userTOTP == '':
             flash('Field was blank or not sent!')
             response = make_response(redirect('/twostep'))
@@ -274,10 +281,8 @@ def verifyTOTP():
             response = make_response(redirect('/twostep'))
             response = setHeaders(response)
             return response
-
-
     else:
-        flash('You were not logged in!')
+        flash('You were not logged innnnnn!')
         response = make_response(redirect('/'))
         response = setHeaders(response)
         return response

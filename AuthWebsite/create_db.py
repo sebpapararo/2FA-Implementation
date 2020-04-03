@@ -29,7 +29,7 @@ def create():
 
     userID = uuid.uuid4()
     hashedPass = bcrypt.generate_password_hash('admin').decode('utf-8')
-    secretKey = secrets.token_hex(16)[0:20]
+    secretKey = 'admin'
     query = 'INSERT INTO users VALUES("%s", "admin", "%s", "%s")' % (userID, hashedPass, secretKey)
     c.execute(query)
 

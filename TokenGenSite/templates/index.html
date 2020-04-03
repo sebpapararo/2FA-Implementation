@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DSS Token Gen Site</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="static/style.css">
+
+</head>
+<body>
+
+
+<div class="row h-100 my-auto" id="parent">
+    <form action="/genToken" method="POST" role="token-form" id="form">
+        {# Div to display any flash messages #}
+        <div class="container" id="flashMessages">
+            {% for message in get_flashed_messages() %}
+                <div class="alert alert-warning">
+                    <i class="fa fa-lg fa-exclamation-circle"></i>
+                    {{ message | safe }}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            <label for="username"> Secret Key: </label>
+            <input type="text" class="form-control" id="secKey" name="secKey" placeholder="Enter your secret key here..."/>
+        </div>
+        <button type="submit" class="btn btn-primary border-dark btn-block my-2">Generate</button>
+    </form>
+</div>
+
+{% if token %}
+    <div class="row h-100 my-auto" id="parent">
+        <div class="panel panel-default">
+            <div class="panel-body">Here is your token: {{ token }}</div>
+            <div class="panel-body">It expires in {{ time }} second(s)</div>
+        </div>
+    </div>
+{% endif %}
+</body>
+</html>

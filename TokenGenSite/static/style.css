@@ -1,0 +1,15 @@
+#parent {
+    display: block;
+    text-align: center;
+}
+
+#form {
+    width: 20%;
+    display: inline-block;
+    margin: 15% auto;
+    text-align: left;
+}
+
+html, body {
+    overflow-x: hidden;
+}
