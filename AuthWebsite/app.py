@@ -66,8 +66,7 @@ def setHeaders(response):
     response.headers['Pragma'] = 'no-cache;'
     response.headers['X-Content-Type-Options'] = 'nosniff;'
     response.headers['Content-Security-Policy'] = "default-src 'self';" \
-                                                  "style-src stackpath.bootstrapcdn.com 'self';" \
-                                                  "img-src i.redd.it 'self';"
+                                                  "style-src stackpath.bootstrapcdn.com 'self';"
     return response
 
 

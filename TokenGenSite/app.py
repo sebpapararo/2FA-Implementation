@@ -48,7 +48,7 @@ def genToken():
     # Truncate the value to a 6 digit code
     totp = truncatedVal % 10 ** 6
 
-    # Get the code as a string using using zfill to add leading zeros if the int is less than 6 digits
+    # Get the code as a string using using zfill to add leading zeros if the int is|x less than 6 digits
     # Use sessions to pass the info through a redirect
     session['token'] = str(totp).zfill(6)
     session['expiryTime'] = str(secsToExpire)
