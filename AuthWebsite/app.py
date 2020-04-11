@@ -206,6 +206,13 @@ def createAccount():
         response = setHeaders(response)
         return response
 
+    # Make sure username doesn't already exist
+    if query_db('SELECT COUNT(username) FROM users WHERE username = "%s"' % username)[0].get('COUNT(username)') == 1:
+        flash('Invalid username, please pick another one!')
+        response = make_response(redirect('/register'))
+        response = setHeaders(response)
+        return response
+
     # Make sure passwords match each other
     if password != passwordCheck:
         flash('Passwords do not match!')
@@ -231,17 +238,12 @@ def createAccount():
 # Function to generate the TOTP server side so the user's input can be checked
 @app.route('/twostep/verify', methods=['POST'])
 def verifyTOTP():
-
-    print('gets here')
-
     if 'tempUsername' in session:
-        print('gets here 2')
         # Get the current time floored to nearest 30 seconds
         unixTime = math.floor(time.time() / 30)
 
         # Fetch the secret key for the user
         secretKey = query_db('SELECT secretKey FROM users WHERE username = "%s"' % session['tempUsername'])[0].get('secretKey')
-        print(secretKey)
 
         # Generate the hash value using the secret key and current time using SHA-1
         hashVal = hmac.new(secretKey.encode(), str(unixTime).encode(), sha1).hexdigest()
@@ -258,10 +260,7 @@ def verifyTOTP():
         # Change to str and use zfill to add leading zeroes to make sure 6 digits
         totp = str(totp).zfill(6)
 
-        print(totp)
-
         userTOTP = request.form.get('totpCode', None)
-        print(userTOTP)
         if userTOTP is None or userTOTP == '':
             flash('Field was blank or not sent!')
             response = make_response(redirect('/twostep'))
