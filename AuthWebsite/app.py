@@ -238,8 +238,17 @@ def createAccount():
 @app.route('/twostep/verify', methods=['POST'])
 def verifyTOTP():
     if 'tempUsername' in session:
+        userTOTP = request.form.get('totpCode', None)
+        if userTOTP is None or userTOTP == '':
+            flash('Field was blank or not sent!')
+            response = make_response(redirect('/twostep'))
+            response = setHeaders(response)
+            return response
+
         # Get the current time floored to nearest 30 seconds
-        unixTime = math.floor(time.time() / 30)
+        unixTime = time.time()
+        secsToExpire = int(30 - (unixTime % 30))
+        unixTime = math.floor(unixTime / 30)
 
         # Fetch the secret key for the user
         secretKey = query_db('SELECT secretKey FROM users WHERE username = "%s"' % session['tempUsername'])[0].get('secretKey')
@@ -251,22 +260,36 @@ def verifyTOTP():
         lastBit = int(hashVal[-1:], 16)
 
         # Dynamically truncate the value and convert to decimal
-        truncatedVal = int(hashVal[lastBit*2:lastBit*2+8], 16)
+        truncatedVal = int(hashVal[lastBit * 2:lastBit * 2 + 8], 16)
 
         # Truncate the value to a 6 digit code
-        totp = truncatedVal % 10**6
+        totp = truncatedVal % 10 ** 6
 
         # Change to str and use zfill to add leading zeroes to make sure 6 digits
         totp = str(totp).zfill(6)
 
-        userTOTP = request.form.get('totpCode', None)
-        if userTOTP is None or userTOTP == '':
-            flash('Field was blank or not sent!')
-            response = make_response(redirect('/twostep'))
-            response = setHeaders(response)
-            return response
+        # Get the previous token and allow for a 5 second leeway for usability
+        # If statement means they are within the leeway
+        if secsToExpire > 25:
+            # Generate another totp with the old information following the same steps
+            prevUnixTime = unixTime - 1
+            prevHashVal = hmac.new(secretKey.encode(), str(prevUnixTime).encode(), sha1).hexdigest()
+            prevLastBit = int(prevHashVal[-1:], 16)
+            prevTruncatedVal = int(prevHashVal[prevLastBit * 2:prevLastBit * 2 + 8], 16)
+            prevTotp = prevTruncatedVal % 10 ** 6
+            prevTotp = str(prevTotp).zfill(6)
 
-        if userTOTP == str(totp):
+            # Check if it equals the previous token
+            if userTOTP == prevTotp:
+                session['username'] = session['tempUsername']
+                session.pop('tempUsername')
+                session.permanent = True
+                app.permanent_session_lifetime = datetime.timedelta(minutes=5)
+                response = make_response(redirect('/dashboard'))
+                response = setHeaders(response)
+                return response
+
+        if userTOTP == totp:
             session['username'] = session['tempUsername']
             session.pop('tempUsername')
             session.permanent = True
@@ -280,7 +303,7 @@ def verifyTOTP():
             response = setHeaders(response)
             return response
     else:
-        flash('You were not logged innnnnn!')
+        flash('You were not logged in!')
         response = make_response(redirect('/'))
         response = setHeaders(response)
         return response
