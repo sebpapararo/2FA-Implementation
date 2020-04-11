@@ -51,15 +51,10 @@ def query_db(query, args=(), one=False):
             cur.close()
     return (rv[0] if rv else None) if one else rv
 
-
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.close()
+# End of database methods - Courtesy of Oli
 
 
-# Set the response headers
+# Function to set the response headers
 def setHeaders(response):
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['Cache-Control'] = 'no-cache; no-store; must-revalidate;'
@@ -111,7 +106,6 @@ def twoStep():
         else:
             flash('You have not completed the first login step!')
             response = make_response(redirect('/'))
-
     response = setHeaders(response)
     return response
 
@@ -126,14 +120,12 @@ def dashboard():
     else:
         flash('You must be logged in to visit the dashboard!')
         response = make_response(redirect('/'))
-
     response = setHeaders(response)
     return response
 
 
 @app.route('/login', methods=['POST'])
 def login():
-
     if 'username' in session:
         flash('You are already logged in. Log out to register!')
         response = make_response(redirect('/dashboard'))
@@ -309,8 +301,10 @@ def verifyTOTP():
         return response
 
 
+# Function to logout the user and take them back to the index
 @app.route('/logout', methods=['POST'])
 def logout():
+    # Check the user is logged in
     if 'username' in session:
         session.pop('username', None)
         flash('Successfully logged out!')
@@ -322,7 +316,7 @@ def logout():
     return response
 
 
-# Function get a meme from the available choices
+# Function to get a meme from the available choices
 def getRandomMeme():
     choice = random.choice(os.listdir("static/memes"))
     return 'static/memes/' + choice

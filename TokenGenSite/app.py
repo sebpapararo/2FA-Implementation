@@ -57,6 +57,6 @@ def genToken():
     return redirect('/')
 
 
+# Run the Flask server
 if __name__ == '__main__':
     app.run(host='127.0.0.2', port=5000, debug=False, ssl_context=context)
-

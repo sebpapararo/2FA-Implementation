@@ -1,14 +1,13 @@
 import os
-import secrets
 import sqlite3
 import uuid
 
 from flask import Flask
 from flask_bcrypt import Bcrypt
 
+# Required configuration
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
-
 DATABASE = 'database.db'
 
 
@@ -27,6 +26,7 @@ def create():
         );
     ''')
 
+    # Create a pre-made user with a known secret
     userID = uuid.uuid4()
     hashedPass = bcrypt.generate_password_hash('admin').decode('utf-8')
     secretKey = 'admin'
@@ -43,6 +43,7 @@ def delete_db():
         os.remove(DATABASE)
 
 
+# Run the functions to recreate the database
 if __name__ == '__main__':
     delete_db()
     create()
