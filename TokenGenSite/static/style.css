@@ -10,6 +10,11 @@
     text-align: left;
 }
 
+.alert {
+    width: 50%;
+
+}
+
 html, body {
     overflow-x: hidden;
 }

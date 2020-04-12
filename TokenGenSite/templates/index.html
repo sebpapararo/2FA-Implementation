@@ -12,14 +12,6 @@
 <body>
 <div class="row h-100 my-auto" id="parent">
     <form action="/genToken" method="POST" role="token-form" id="form">
-        <div class="container" id="flashMessages">
-            {% for message in get_flashed_messages() %}
-                <div class="alert alert-warning">
-                    <i class="fa fa-lg fa-exclamation-circle"></i>
-                    {{ message | safe }}
-                </div>
-            {% endfor %}
-        </div>
         <div class="form-group">
             <label for="username"> Secret Key: </label>
             <input type="text" class="form-control" id="secKey" name="secKey" placeholder="Enter your secret key here..."/>
@@ -31,8 +23,10 @@
 {% if token %}
     <div class="row h-100 my-auto" id="parent">
         <div class="panel panel-default">
-            <div class="panel-body">Here is your token: {{ token }}</div>
-            <div class="panel-body">It expires in {{ time }} second(s)</div>
+            <div class="alert alert-success" style="margin-left:auto;margin-right:auto;width:50%;" role="alert">
+                Your token is: {{ token }}<br>
+                It expires in {{ time }} second(s)
+            </div>
         </div>
     </div>
 {% endif %}
