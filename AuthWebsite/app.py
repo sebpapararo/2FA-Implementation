@@ -220,7 +220,7 @@ def createAccount():
     get_db().commit()
 
     flash('Account has been created, please login!')
-    flash('Your secret key is: \'' + secretKey + '\'. Copy this, and keep it somewhere safe! It will not be shown again!')
+    flash('Your secret key is: ' + secretKey + '<br/>Copy this, and keep it somewhere safe! It will not be shown again!')
     response = make_response(redirect('/'))
     response = setHeaders(response)
     return response
@@ -237,7 +237,7 @@ def verifyTOTP():
             response = setHeaders(response)
             return response
 
-        # Get the current time floored to nearest 30 seconds
+        # Get the current time floored to nearest 30 seconds and how long until it expires
         unixTime = time.time()
         secsToExpire = int(30 - (unixTime % 30))
         unixTime = math.floor(unixTime / 30)
@@ -248,11 +248,11 @@ def verifyTOTP():
         # Generate the hash value using the secret key and current time using SHA-1
         hashVal = hmac.new(secretKey.encode(), str(unixTime).encode(), sha1).hexdigest()
 
-        # Get the last bit of the hash value in decimal format
+        # Get the last bit of the hash value and convert to decimal format
         lastBit = int(hashVal[-1:], 16)
 
-        # Dynamically truncate the value and convert to decimal
-        truncatedVal = int(hashVal[lastBit * 2:lastBit * 2 + 8], 16)
+        # Dynamically truncate the value and convert to decimal format
+        truncatedVal = int(hashVal[lastBit*2:lastBit*2+8], 16)
 
         # Truncate the value to a 6 digit code
         totp = truncatedVal % 10 ** 6
