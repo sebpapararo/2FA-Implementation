@@ -252,7 +252,7 @@ def verifyTOTP():
         lastBit = int(hashVal[-1:], 16)
 
         # Dynamically truncate the value and convert to decimal format
-        truncatedVal = int(hashVal[lastBit*2:lastBit*2+8], 16)
+        truncatedVal = int(hashVal[lastBit * 2:lastBit * 2 + 8], 16)
 
         # Truncate the value to a 6 digit code
         totp = truncatedVal % 10 ** 6

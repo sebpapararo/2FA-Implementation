@@ -25,6 +25,7 @@ def index():
 # Note: method for generating tokens will be discussed in the report
 @app.route('/genToken', methods=['POST'])
 def genToken():
+
     # Get the secret key from the web form
     secretKey = request.form.get('secKey', None)
     if secretKey is None or secretKey == '':
