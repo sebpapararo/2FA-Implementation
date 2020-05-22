@@ -8,7 +8,7 @@ import time
 # App configuration and context for https
 app = Flask(__name__)
 app.secret_key = os.urandom(64)
-context = ('certificate.pem', 'key.pem')
+context = ('../certificate.pem', '../key.pem')
 
 
 # Route to load the index page

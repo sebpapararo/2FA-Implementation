@@ -17,7 +17,7 @@ app = Flask(__name__)
 bcrypt = Bcrypt(app)
 DATABASE = 'database.db'
 app.secret_key = os.urandom(64)
-context = ('certificate.pem', 'key.pem')
+context = ('../certificate.pem', '../key.pem')
 app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.config['SESSION_COOKIE_SECURE'] = True
 
