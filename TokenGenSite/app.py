@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, flash, redirect, session
 import os
 import math
 import hmac
-from hashlib import sha1
 import time
+
+from flask import Flask, render_template, request, flash, redirect, session
+from hashlib import sha1
 
 # App configuration and context for https
 app = Flask(__name__)
@@ -40,7 +41,7 @@ def genToken():
     # Generate the hash value using the secret key and current time using SHA-1
     hashVal = hmac.new(secretKey.encode(), str(flooredTime).encode(), sha1).hexdigest()
 
-    # Get the last bit of the hash value in decimal format
+    # Get the last 4 bits (i.e last character) of the hash value in decimal format
     lastBit = int(hashVal[-1:], 16)
 
     # Dynamically truncate the value and convert to decimal

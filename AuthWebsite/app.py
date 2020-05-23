@@ -7,8 +7,8 @@ import secrets
 import sqlite3
 import time
 import uuid
-from hashlib import sha1
 
+from hashlib import sha1
 from flask import Flask, render_template, request, flash, redirect, session, make_response, g
 from flask_bcrypt import Bcrypt
 
@@ -243,12 +243,13 @@ def verifyTOTP():
         unixTime = math.floor(unixTime / 30)
 
         # Fetch the secret key for the user
-        secretKey = query_db('SELECT secretKey FROM users WHERE username = "%s"' % session['tempUsername'])[0].get('secretKey')
+        secretKey = query_db('SELECT secretKey FROM users WHERE username = "%s"' %
+                             session['tempUsername'])[0].get('secretKey')
 
         # Generate the hash value using the secret key and current time using SHA-1
         hashVal = hmac.new(secretKey.encode(), str(unixTime).encode(), sha1).hexdigest()
 
-        # Get the last bit of the hash value and convert to decimal format
+        # Get the last 4 bits (i.e last character) of the hash value and convert to decimal format
         lastBit = int(hashVal[-1:], 16)
 
         # Dynamically truncate the value and convert to decimal format
