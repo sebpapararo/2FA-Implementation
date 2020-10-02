@@ -1,4 +1,4 @@
-# DSS Auth Coursework- 100164855
+# 2FA Implementation
 
 This coursework consists of two websites that are designed to work together in order to allow
 the user to log in using 2 factor authentication.
